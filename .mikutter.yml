@@ -1,0 +1,9 @@
+---
+slug: :ipmsg
+depends:
+  mikutter: 3.5.0
+  plugin: []
+version: '0.0.1'
+author: shibafu528
+name: ipmsg
+description: ipmsg for mikutter
