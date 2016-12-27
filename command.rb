@@ -6,6 +6,18 @@ module Plugin::IPMsg::Command
     Query.new(command_number, self)
   end
 
+  def entry
+    command(Plugin::IPMsg::Mnemonic::BR_ENTRY).caputf8opt.broadcast
+  end
+
+  def exit
+    command(Plugin::IPMsg::Mnemonic::BR_EXIT).broadcast
+  end
+
+  def send(to, text)
+    command(Plugin::IPMsg::Mnemonic::SENDMSG).utf8opt.extra(text).send(to)
+  end
+
   class Query
     MAX_RAND = (1 << 30) - 1
 
@@ -27,8 +39,18 @@ module Plugin::IPMsg::Command
       self
     end
 
+    def force_cp932?
+      [Plugin::IPMsg::Mnemonic::BR_ENTRY,
+       Plugin::IPMsg::Mnemonic::BR_EXIT,
+       Plugin::IPMsg::Mnemonic::BR_ABSENCE].include? @command_no
+    end
+
     def to_command
-      [Plugin::IPMsg::VERSION, @packet_no, @ipmsg.name, @ipmsg.host, @command_no| @options.inject(:|), *@extras].join(':')
+      command_hex = @command_no
+      command_hex |= @options.inject(:|) unless @options.empty?
+
+      command = [Plugin::IPMsg::VERSION, @packet_no, @ipmsg.name, @ipmsg.host, command_hex, *@extras].join(':')
+      command.encode('cp932') if force_cp932?
     end
 
     def send(to)

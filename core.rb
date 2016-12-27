@@ -8,13 +8,14 @@ module Plugin::IPMsg
   DEFAULT_PORT = 2425
 
   class IPMsg
-    attr_accessor :name, :host
+    attr_accessor :name, :group, :host
     attr_reader :port, :socket
 
-    def initialize(port = DEFAULT_PORT, options = {})
+    def initialize(options = {})
       @name = options[:name] || ENV['USER'] || ENV['USERNAME'] || 'Unknown_User'
+      @group = options[:group] || ''
       @host = options[:host] || `hostname`.chomp || 'Unknown_Host'
-      @port = port
+      @port = options[:port] || DEFAULT_PORT
     end
 
     def connect
@@ -24,10 +25,13 @@ module Plugin::IPMsg
       @receiver = Thread.new do
         loop do
           receive = @socket.recv(65535).chomp
-          p receive
+          notice receive
 
-          # TODO: さーてどうすっかぁーーｗｗｗｗ
+          # VERSION:PACKET_NO:NAME:HOST:COMMAND_NO の最低5要素はあるはず
           message = receive.split(':')
+          if message.length >= 5
+            Plugin.call :ipmsg_dump, receive
+          end
         end
       end
 
@@ -53,18 +57,6 @@ module Plugin::IPMsg
 
     def to_s
       "#{@name}@#{@host}:#{@port}"
-    end
-
-    def entry
-      command(Plugin::IPMsg::Mnemonic::BR_ENTRY).caputf8opt.broadcast
-    end
-
-    def exit
-      command(Plugin::IPMsg::Mnemonic::BR_EXIT).broadcast
-    end
-
-    def send(to, text)
-      command(Plugin::IPMsg::Mnemonic::SENDMSG).utf8opt.extra(text).send(to)
     end
 
   end
