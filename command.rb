@@ -7,7 +7,7 @@ module Plugin::IPMsg
     end
 
     def entry
-      command(Plugin::IPMsg::Mnemonic::BR_ENTRY).caputf8opt.broadcast
+      command(Plugin::IPMsg::Mnemonic::BR_ENTRY).caputf8opt.extra(@nickname).broadcast
     end
 
     def exit
@@ -15,7 +15,7 @@ module Plugin::IPMsg
     end
 
     def ansentry(to, caputf8)
-      command(Plugin::IPMsg::Mnemonic::ANSENTRY).tap { |c| c.utf8opt if caputf8 }.send(to)
+      command(Plugin::IPMsg::Mnemonic::ANSENTRY).tap { |c| c.utf8opt if caputf8 }.extra(@nickname).send(to)
     end
 
     def send(to, text)

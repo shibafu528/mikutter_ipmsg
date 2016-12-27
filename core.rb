@@ -24,11 +24,12 @@ module Plugin::IPMsg
   end
 
   class IPMsg
-    attr_accessor :name, :group, :host
-    attr_reader :port, :socket
+    attr_accessor :nickname, :group, :host
+    attr_reader :name, :port, :socket
 
     def initialize(options = {})
-      @name = options[:name] || ENV['USER'] || ENV['USERNAME'] || 'Unknown_User'
+      @name = ENV['USER'] || ENV['USERNAME'] || 'Unknown_User'
+      @nickname = options[:nickname] || @name
       @group = options[:group] || ''
       @host = options[:host] || `hostname`.chomp || 'Unknown_Host'
       @port = options[:port] || DEFAULT_PORT

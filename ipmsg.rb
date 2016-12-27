@@ -3,10 +3,10 @@
 require_relative 'core'
 
 Plugin.create :ipmsg do
-  UserConfig[:ipmsg_name] ||= ENV['USER'] || ENV['USERNAME']
+  UserConfig[:ipmsg_nickname] ||= ENV['USER'] || ENV['USERNAME']
   UserConfig[:ipmsg_port] ||= Plugin::IPMsg::DEFAULT_PORT
 
-  @ipmsg = Plugin::IPMsg::IPMsg.new(name: UserConfig[:ipmsg_name], group: UserConfig[:ipmsg_group], port: UserConfig[:ipmsg_port])
+  @ipmsg = Plugin::IPMsg::IPMsg.new(nickname: UserConfig[:ipmsg_nickname], group: UserConfig[:ipmsg_group], port: UserConfig[:ipmsg_port])
 
   on_boot {
     @ipmsg.connect
@@ -25,7 +25,7 @@ Plugin.create :ipmsg do
 
   settings('IPメッセンジャー') {
     settings('ユーザー情報') {
-      input 'ユーザー名', :ipmsg_name
+      input 'ユーザー名', :ipmsg_nickname
       input 'グループ名', :ipmsg_group
     }
     settings('通信設定') {
