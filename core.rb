@@ -7,6 +7,22 @@ module Plugin::IPMsg
   # IPMSG Default Port (TCP/UDP)
   DEFAULT_PORT = 2425
 
+  # Client Version (SENDINFO)
+  VERSION_INFO = 'mikutter_ipmsg'
+
+  # Command/Option Bit Mask
+  COMMAND_MASK = 0x000000ff
+  OPTION_MASK  = 0xffffff00
+
+  module Part
+    PROTOCOL_VERSION = 0
+    PACKET_NO        = 1
+    USER             = 2
+    HOST             = 3
+    COMMAND_NO       = 4
+    EXTRAS           = 5
+  end
+
   class IPMsg
     attr_accessor :name, :group, :host
     attr_reader :port, :socket
@@ -24,14 +40,12 @@ module Plugin::IPMsg
       @socket.setsockopt(Socket::SOL_SOCKET, Socket::SO_BROADCAST, 1)
       @receiver = Thread.new do
         loop do
-          receive = @socket.recv(65535).chomp
-          notice receive
+          receive, inet_addr = @socket.recvfrom(65535)
+          notice "#{inet_addr} #{receive.chomp}"
 
           # VERSION:PACKET_NO:NAME:HOST:COMMAND_NO の最低5要素はあるはず
-          message = receive.split(':')
-          if message.length >= 5
-            Plugin.call :ipmsg_dump, receive
-          end
+          message = receive.chomp.split(':')
+          Plugin.call :ipmsg_receive, self, message, inet_addr if message.length >= 5
         end
       end
 
@@ -64,3 +78,4 @@ end
 
 require_relative 'mnemonic'
 require_relative 'command'
+require_relative 'model'
